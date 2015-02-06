@@ -1,3 +1,5 @@
+import os
+import sys
 import numpy as np
 import cv2
 import sys
@@ -45,22 +47,36 @@ def concatenation(table2D):
 	return table2D[2:-1]
 
 def match(hash1, hash2):
+	if hash1 == '':
+		hash1 = '0'
+	if hash2 == '':
+		hash2 = '0'
 	hex1 = int(hash1, 16)
 	hex2 = int(hash2, 16)
 
-	size = len(hash1) if hash1 <= hash2 else len(hash2)
+	size = len(hash2) if hash1 <= hash2 else len(hash1)
 	size *= 4
 	similitude = (hex1 ^ hex2)
 	similitude = bin(similitude)[2:]
 	similitude = similitude.count('0') + size-len(similitude)
 	
+
 	percentage = similitude*100.0/size
 	return percentage
+
+def checkImage(img1, img2, path1, path2):
+	if ((img1 is None) or (img2 is None)):
+		if (img1 is None):
+			print ("Error: " + path1 + " is not an image")
+		if (img2 is None):
+			print ("Error: " + path2 + " is not an image")
+		sys.exit()
 
 def aHash(path1,path2):
 	# Import images
 	img1 = cv2.imread(path1)
 	img2 = cv2.imread(path2)
+	checkImage(img1, img2, path1, path2)
 
 	# Resize them to 8x8
 	img1resize = cv2.resize(img1, (resize_w, resize_h)) 
@@ -91,6 +107,7 @@ def pHash(path1,path2):
 	# Import images
 	img1 = cv2.imread(path1)
 	img2 = cv2.imread(path2)
+	checkImage(img1, img2, path1, path2)
 
 	# Resize them to 8x8
 	img1resize = cv2.resize(img1, (resize_w, resize_h)) 
@@ -123,8 +140,10 @@ def pHash(path1,path2):
 	
 def dHash(path1,path2):
 	# Import images
+	error = False
 	img1 = cv2.imread(path1)
 	img2 = cv2.imread(path2)
+	checkImage(img1, img2, path1, path2)
 
 	# Resize them to 9x8
 	img1resize = cv2.resize(img1, (resize_w+1, resize_h)) 
@@ -148,7 +167,7 @@ def dHash(path1,path2):
 
 
 def errorInput():
-	print("Pleaser enter argument as follow : image1, image2, algorithm")
+	print("Pleaser enter arguments as follow : image1, image2, algorithm")
 	print('For the algorithm, you may use:')
 	print("# 'a', Using the Average Hash algorithm (ahash)")
 	print("# 'p' Using the Average Hash Perceptive (phash)")
@@ -160,7 +179,7 @@ def errorInput():
 def main():
 	if len(sys.argv) < 3:
 		errorInput()
-		return
+		sys.exit()
 
 	elif len(sys.argv) == 3:
 		arg3 = 'all' # hash algorithm
@@ -170,10 +189,17 @@ def main():
 
 	else:
 		errorInput()
-		return
+		sys.exit()
 
 	arg1 = sys.argv[1] # Picture 1
 	arg2 = sys.argv[2] # Picture 2
+
+	if (os.path.isfile(arg1) * os.path.isfile(arg2) == False):
+		if (os.path.isfile(arg1) * os.path.isfile(arg2) == False):
+			print("Image " + arg1 +" not found")
+		if (os.path.isfile(arg1) * os.path.isfile(arg2) == False):
+			print("Image " + arg2 +" not found")
+		sys.exit()
 
 	if arg3 == 'a':
 		aHash(arg1, arg2)
@@ -186,9 +212,9 @@ def main():
 		pHash(arg1, arg2)
 		dHash(arg1, arg2)
 	else:
-		print "Error in input algorithm argument !"
+	 	print ("Error in input algorithm argument !")
 		errorInput()
-		return
+		sys.exit()
 	print ("Done !")
 
 main()
